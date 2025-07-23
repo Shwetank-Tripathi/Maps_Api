@@ -46,11 +46,10 @@ export default function MapComponent({ onLocationSelect }) {
       const coords = { lat, lng };
       setMarker(coords);
       
-      // For map clicks, we only have coordinates, no address
       if (onLocationSelect) {
         onLocationSelect({ 
           coordinates: coords, 
-          address: '' // Empty address for direct map clicks
+          address: '' 
         });
       }
     },
@@ -70,7 +69,7 @@ export default function MapComponent({ onLocationSelect }) {
           if (onLocationSelect) {
             onLocationSelect({ 
               coordinates: coords, 
-              address: '' // Empty address for geolocation
+              address: ''
             });
           }
           
@@ -109,35 +108,5 @@ export default function MapComponent({ onLocationSelect }) {
     </div>
   );
 }
-
-// import React, { useState } from "react";
-// import { APIProvider, Map, Marker } from "@vis.gl/react-google-maps";
-
-// const MapComponent = () => {
-//   const [markerLocation] = useState({
-//     lat: 51.509865,
-//     lng: -0.118092, // London
-//   });
-
-//   return (
-//     <div className="flex justify-evenly p-20 font-sans">
-//       <APIProvider apiKey={import.meta.env.VITE_GOOGLE_MAPS_API_KEY}>
-//         <div className="h-[500px] w-1/2 border-2 border-black rounded-2xl overflow-hidden shadow-md">
-//           <Map
-//             style={{ width: "100%", height: "100%" }}
-//             defaultZoom={13}
-//             defaultCenter={markerLocation}
-//             gestureHandling="greedy"
-//             disableDefaultUI
-//           >
-//             <Marker position={markerLocation} />
-//           </Map>
-//         </div>
-//       </APIProvider>
-//     </div>
-//   );
-// };
-
-// export default MapComponent;
 
 
