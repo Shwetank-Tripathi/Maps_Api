@@ -15,6 +15,31 @@ export default function MapComponent({ onLocationSelect }) {
   const autocompleteRef = useRef(null);
   const mapRef = useRef(null);
   const geolocationInitialized = useRef(false);
+  const [address, setAddress] = useState(''); 
+
+  const geocodeLatLng = useCallback((lat, lng) => {
+    const geocoder = new window.google.maps.Geocoder();
+    const latlng = { lat, lng };
+    geocoder.geocode({ location: latlng }, (results, status) => {
+      if (status === 'OK' && results[0]) {
+        setAddress(results[0].formatted_address);
+        if (onLocationSelect) {
+          onLocationSelect({
+            coordinates: latlng,
+            address: results[0].formatted_address,
+          });
+        }
+      } else {
+        setAddress('');
+        if (onLocationSelect) {
+          onLocationSelect({
+            coordinates: latlng,
+            address: '',
+          });
+        }
+      }
+    });
+  }, [onLocationSelect]);
 
   const onPlaceChanged = useCallback(() => {
     const place = autocompleteRef.current?.getPlace();
@@ -26,8 +51,8 @@ export default function MapComponent({ onLocationSelect }) {
       
       setCenter(coords);
       setMarker(coords);
+      setAddress(address);
       
-      // Pass both coordinates and address
       if (onLocationSelect) {
         onLocationSelect({ 
           coordinates: coords, 
@@ -45,15 +70,22 @@ export default function MapComponent({ onLocationSelect }) {
       const lng = e.latLng.lng();
       const coords = { lat, lng };
       setMarker(coords);
-      
-      if (onLocationSelect) {
-        onLocationSelect({ 
-          coordinates: coords, 
-          address: '' 
-        });
-      }
+      setCenter(coords);
+      geocodeLatLng(lat, lng);
     },
-    [onLocationSelect]
+    [geocodeLatLng]
+  );
+
+  const handleMarkerDragEnd = useCallback(
+    (e) => {
+      const lat = e.latLng.lat();
+      const lng = e.latLng.lng();
+      const coords = { lat, lng };
+      setMarker(coords);
+      setCenter(coords);
+      geocodeLatLng(lat, lng);
+    },
+    [geocodeLatLng]
   );
 
   useEffect(() => {
@@ -65,21 +97,13 @@ export default function MapComponent({ onLocationSelect }) {
           const coords = { lat: latitude, lng: longitude };
           setCenter(coords);
           setMarker(coords);
-            
-          if (onLocationSelect) {
-            onLocationSelect({ 
-              coordinates: coords, 
-              address: ''
-            });
-          }
-          
+          geocodeLatLng(latitude, longitude);
           mapRef.current?.panTo(coords);
         },
         () => {}
       );
     }
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, []);
+  }, [geocodeLatLng]);
 
   if (!isLoaded) return <div>Loading Map...</div>;
 
@@ -93,6 +117,8 @@ export default function MapComponent({ onLocationSelect }) {
           type="text"
           placeholder="Search address"
           className="border-2 border-gray-500 rounded-lg p-2 "
+          value={address}
+          onChange={e => setAddress(e.target.value)}
         />
       </Autocomplete>
 
@@ -100,10 +126,16 @@ export default function MapComponent({ onLocationSelect }) {
         mapContainerStyle={containerStyle}
         center={center}
         zoom={15}
-        onLoad={(map) => (mapRef.current = map)}
         onClick={handleMapClick}
+        onLoad={map => (mapRef.current = map)}
       >
-        {marker && <Marker position={marker} />}
+        {marker && (
+          <Marker
+            position={marker}
+            draggable={true}
+            onDragEnd={handleMarkerDragEnd}
+          />
+        )}
       </GoogleMap>
     </div>
   );
