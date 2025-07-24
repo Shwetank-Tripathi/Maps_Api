@@ -1,5 +1,8 @@
 FOR FRONTEND CREATE ".env.local" WITH YOUR KEYS UNDER "GOOGLE_API_KEYS"
 
+    TO RUN: npm run dev 
+
 
 FOR BACKEND CREATE ".env" WITH YOUR KEYS OF "MONGO_URI"
 
+    TO RUN: npm run test
